@@ -277,7 +277,19 @@ def generate_document():
         data_dict = json.loads(json_str)
     except:
         data_dict = {}
-    
+
+    # Для экзаменационных билетов — перемешиваем вопросы случайно без повторений
+    if doc_type == 'exam' and data_dict:
+        # Собираем все ключи вопросов в порядке [В1], [В2], ...
+        question_keys = [k for k in data_dict if re.match(r'^\[В\d+\]$', k, re.IGNORECASE)]
+        question_keys_sorted = sorted(question_keys, key=lambda k: int(re.search(r'\d+', k).group()))
+        question_values = [data_dict[k] for k in question_keys_sorted]
+        # Перемешиваем значения случайно
+        random.shuffle(question_values)
+        # Раскладываем обратно по тем же ключам
+        for key, val in zip(question_keys_sorted, question_values):
+            data_dict[key] = val
+
     output_path = os.path.join(app.config['EXPORTS_FOLDER'], fname)
     fill_template_smart(str(template_path), output_path, data_dict)
     
