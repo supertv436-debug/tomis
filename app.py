@@ -100,7 +100,8 @@ def fill_template_smart(template_path, output_path, data_dict):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    with open('index.html', 'r', encoding='utf-8') as f:
+        return f.read()
 
 @app.route('/api/set_key', methods=['POST'])
 def set_key():
