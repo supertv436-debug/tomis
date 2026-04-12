@@ -71,32 +71,32 @@ def ask_ai(client, context, question, temperature=0.0):
         return f"ОШИБКА API: {str(e)}"
 
 def fill_template_smart(template_path, output_path, data_dict):
-    doc = docx.Document(template_path)
-    clean_dict = {k.replace('*', '').strip().lower(): str(v) for k, v in data_dict.items()}
+    import zipfile, copy
+    from lxml import etree
 
-    def process_p(p):
-        orig = p.text
-        text = orig
-        for k, v in clean_dict.items():
-            if k in text.lower():
-                text = re.sub(re.escape(k), str(v), text, flags=re.IGNORECASE)
-        if text != orig:
-            text = re.sub(r'\s+\.', '.', text)
-            text = re.sub(r' {2,}', ' ', text)
-            # Очищаем параграф и создаём новый run с правильным шрифтом
-            p.clear()
-            run = p.add_run(text)
-            run.font.name = 'Times New Roman'
-            run.font.size = Pt(14)
+    # Делаем XML-замену напрямую в DOCX (надёжнее, чем через python-docx runs)
+    with zipfile.ZipFile(template_path, 'r') as zin:
+        names = zin.namelist()
+        file_contents = {name: zin.read(name) for name in names}
 
-    for p in doc.paragraphs:
-        process_p(p)
-    for table in doc.tables:
-        for row in table.rows:
-            for cell in row.cells:
-                for p in cell.paragraphs:
-                    process_p(p)
-    doc.save(output_path)
+    xml_bytes = file_contents.get('word/document.xml', b'')
+    xml_str = xml_bytes.decode('utf-8')
+
+    import html as _html
+    # Собираем словарь замен: ищем ключи как есть (в любом регистре)
+    for k, v in data_dict.items():
+        key = k.strip()
+        # XML-экранируем значение чтобы не сломать структуру документа
+        safe_v = _html.escape(str(v), quote=False)
+        # Замена без учёта регистра
+        pattern = re.compile(re.escape(key), re.IGNORECASE)
+        xml_str = pattern.sub(safe_v, xml_str)
+
+    file_contents['word/document.xml'] = xml_str.encode('utf-8')
+
+    with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zout:
+        for name in names:
+            zout.writestr(name, file_contents[name])
 
 @app.route('/')
 def index():
@@ -184,26 +184,100 @@ def generate_document():
         template_path = next((t for t in templates if t.suffix.lower() == '.docx'), templates[0])
     
     if doc_type == 'plan':
-        task = "Изучи силлабус и верни данные для календарного плана в формате JSON. Если не получится, верни полный текст плана, который можно вставить в шаблон по полю СОДЕРЖИМОЕ."
-        fname = f"План_ГОТОВЫЙ_{random.randint(10,99)}.docx"
-        temp = 0.2
+        task = """Изучи силлабус и извлеки данные для заполнения шаблона календарного плана.
+Верни ТОЛЬКО валидный JSON (без markdown, без пояснений) со следующими ключами:
+{
+  "[ДИСЦИПЛИНА]": "название дисциплины из силлабуса",
+  "[ГРУППЫ]": "номера групп или поток (если не указано — оставь пустым)",
+  "[СЕМЕСТР]": "номер семестра (1 или 2)",
+  "[ЧАСЫ_ЛЕК]": "количество часов лекций (число)",
+  "[ЧАСЫ_ЛАБ]": "количество часов лабораторных/практических (число)",
+  "[Л1]": "тема лекции 1",
+  "[Л2]": "тема лекции 2",
+  "[Л3]": "тема лекции 3",
+  "[Л4]": "тема лекции 4",
+  "[Л5]": "тема лекции 5",
+  "[Л6]": "тема лекции 6",
+  "[Л7]": "тема лекции 7",
+  "[Л8]": "тема лекции 8",
+  "[Л9]": "тема лекции 9",
+  "[Л10]": "тема лекции 10",
+  "[Л11]": "тема лекции 11",
+  "[ПР1]": "тема лаб/практ работы 1",
+  "[ПР2]": "тема лаб/практ работы 2",
+  "[ПР3]": "тема лаб/практ работы 3",
+  "[ПР4]": "тема лаб/практ работы 4",
+  "[ПР5]": "тема лаб/практ работы 5",
+  "[ПР6]": "тема лаб/практ работы 6",
+  "[ПР7]": "тема лаб/практ работы 7",
+  "[ПР8]": "тема лаб/практ работы 8"
+}
+Если тем меньше чем полей — заполни оставшиеся схожими темами из силлабуса."""
+        fname = f"Календарный_план_{random.randint(10,99)}.docx"
+        temp = 0.1
     else:
-        task = "Найди все контрольные вопросы для СРС и верни их в JSON формате. Если не получится, верни полный текст экзаменационных билетов для вставки в шаблон по полю СОДЕРЖИМОЕ."
-        fname = f"Билеты_ГОТОВЫЕ_{random.randint(10,99)}.docx"
-        temp = 0.6
+        task = """Изучи силлабус и сформируй данные для экзаменационных билетов.
+Верни ТОЛЬКО валидный JSON (без markdown, без пояснений) со следующими ключами:
+{
+  "[КАФЕДРА]": "название кафедры из силлабуса",
+  "[Дисциплина]": "название дисциплины",
+  "[ШИФР]": "шифр специальности",
+  "[СПЕЦ]": "название специальности",
+  "[ЗАВ]": "ФИО заведующего кафедрой (если есть, иначе пустая строка)",
+  "[ПРЕП]": "ФИО преподавателя (если есть, иначе пустая строка)",
+  "[В1]": "вопрос 1",
+  "[В2]": "вопрос 2",
+  "[В3]": "вопрос 3",
+  "[В4]": "вопрос 4",
+  "[В5]": "вопрос 5",
+  "[В6]": "вопрос 6",
+  "[В7]": "вопрос 7",
+  "[В8]": "вопрос 8",
+  "[В9]": "вопрос 9",
+  "[В10]": "вопрос 10",
+  "[В12]": "вопрос 11",
+  "[В13]": "вопрос 12",
+  "[В14]": "вопрос 13",
+  "[В15]": "вопрос 14",
+  "[В16]": "вопрос 15",
+  "[В17]": "вопрос 16",
+  "[В18]": "вопрос 17",
+  "[В19]": "вопрос 18",
+  "[В20]": "вопрос 19",
+  "[В21]": "вопрос 20",
+  "[В22]": "вопрос 21",
+  "[В23]": "вопрос 22",
+  "[В24]": "вопрос 23",
+  "[В25]": "вопрос 24",
+  "[В26]": "вопрос 25",
+  "[В27]": "вопрос 26",
+  "[В28]": "вопрос 27",
+  "[В29]": "вопрос 28",
+  "[В30]": "вопрос 29",
+  "[В31]": "вопрос 30",
+  "[В32]": "вопрос 31",
+  "[В33]": "вопрос 32",
+  "[В34]": "вопрос 33"
+}
+Вопросы бери из раздела СРС, контрольных вопросов или экзаменационных вопросов силлабуса."""
+        fname = f"Экзаменационные_билеты_{random.randint(10,99)}.docx"
+        temp = 0.2
     
     client = Groq(api_key=api_key)
     ans = ask_ai(client, context, task, temp)
     
+    # Извлекаем JSON из ответа (убираем markdown-блоки если есть)
+    json_str = ans.strip()
+    if '```' in json_str:
+        import re as _re
+        match = _re.search(r'```(?:json)?\s*([\s\S]*?)```', json_str)
+        if match:
+            json_str = match.group(1).strip()
+    
     try:
-        data_dict = json.loads(ans)
+        data_dict = json.loads(json_str)
     except:
-        data_dict = {
-            'СОДЕРЖИМОЕ': ans,
-            'CONTENT': ans,
-            '{{СОДЕРЖИМОЕ}}': ans,
-            '{{CONTENT}}': ans
-        }
+        data_dict = {}
     
     output_path = os.path.join(app.config['EXPORTS_FOLDER'], fname)
     fill_template_smart(str(template_path), output_path, data_dict)
