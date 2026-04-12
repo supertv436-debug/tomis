@@ -1,0 +1,51 @@
+# GitHub Pages Configuration
+title: "T.O.M.i.S. CORE v4.3"
+description: "Кафедральный AI-ассистент для КарГТУ им. А. Сагинова"
+baseurl: ""
+url: "https://[username].github.io"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+plugins:
+  - jekyll-feed
+
+# Exclude from processing
+exclude:
+  - app.py
+  - requirements.txt
+  - README.md
+  - GITHUB_DEPLOY.md
+  - templates/
+  - uploads/
+  - TEMPLATES/
+  - EXPORTS/
+  - .git/
+  - .github/
+  - node_modules/
+  - vendor/
+  - Gemfile
+  - Gemfile.lock
+  - 9659876/
+  - WPy64-310111/
+  - ai_ключ/
+
+# Include specific files
+include:
+  - _config.yml
+  - index.html
+
+# Jekyll settings
+livereload: false
+safe: true
+
+# Security settings
+whitelist:
+  - jekyll-feed
+  - kramdown
+  - rouge
+
+# GitHub Pages specific
+plugins_dir: _plugins
+layouts_dir: _layouts
+includes_dir: _includes
