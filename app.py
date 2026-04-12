@@ -71,32 +71,31 @@ def ask_ai(client, context, question, temperature=0.0):
         return f"ОШИБКА API: {str(e)}"
 
 def fill_template_smart(template_path, output_path, data_dict):
-    import zipfile, copy
-    from lxml import etree
+    doc = docx.Document(template_path)
+    clean_dict = {k.replace('*', '').strip().lower(): str(v) for k, v in data_dict.items()}
 
-    # Делаем XML-замену напрямую в DOCX (надёжнее, чем через python-docx runs)
-    with zipfile.ZipFile(template_path, 'r') as zin:
-        names = zin.namelist()
-        file_contents = {name: zin.read(name) for name in names}
+    def process_p(p):
+        text = p.text
+        orig = text
+        for k, v in clean_dict.items():
+            if k in text.lower():
+                text = re.sub(re.escape(k), str(v), text, flags=re.IGNORECASE)
+        if text != orig:
+            text = re.sub(r'\s+\.', '.', text)
+            text = re.sub(r' {2,}', ' ', text)
+            p.text = text
+            for run in p.runs:
+                run.font.name = 'Times New Roman'
+                run.font.size = Pt(14)
 
-    xml_bytes = file_contents.get('word/document.xml', b'')
-    xml_str = xml_bytes.decode('utf-8')
-
-    import html as _html
-    # Собираем словарь замен: ищем ключи как есть (в любом регистре)
-    for k, v in data_dict.items():
-        key = k.strip()
-        # XML-экранируем значение чтобы не сломать структуру документа
-        safe_v = _html.escape(str(v), quote=False)
-        # Замена без учёта регистра
-        pattern = re.compile(re.escape(key), re.IGNORECASE)
-        xml_str = pattern.sub(safe_v, xml_str)
-
-    file_contents['word/document.xml'] = xml_str.encode('utf-8')
-
-    with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zout:
-        for name in names:
-            zout.writestr(name, file_contents[name])
+    for p in doc.paragraphs:
+        process_p(p)
+    for table in doc.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                for p in cell.paragraphs:
+                    process_p(p)
+    doc.save(output_path)
 
 @app.route('/')
 def index():
