@@ -1031,25 +1031,9 @@
             }
             apiKey = key;
             localStorage.setItem('groq_api_key', key);
-
-            try {
-                const response = await fetch(`${apiBase}/api/set_key`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ api_key: key })
-                });
-                const data = await response.json();
-                if (!data.success) {
-                    throw new Error(data.message || 'Ошибка сохранения API ключа');
-                }
-                updateStatus();
-                alert('API ключ сохранён');
-                closeModal();
-            } catch (err) {
-                alert('Ошибка сохранения ключа: ' + err.message);
-            }
+            updateStatus();
+            alert('API ключ сохранён');
+            closeModal();
         }
 
         async function handleFileUpload(input) {
