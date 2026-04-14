@@ -295,28 +295,22 @@ def generate_document():
     
     return jsonify({'success': True, 'message': 'Документ создан', 'filename': fname})
 
+GITHUB_RAW_BASE = "https://raw.githubusercontent.com/supertv436-debug/tomis/main/"
+
 @app.route('/api/templates')
 def get_templates():
-    """Получить список всех шаблонов из папки TEMPLATES"""
-    templates = []
-    number = 1
-    
-    # Сканируем папку и ищем все .docx и .doc файлы
-    for file_path in sorted(Path(app.config['TEMPLATES_FOLDER']).glob("*")):
-        if file_path.suffix.lower() in ['.docx', '.doc']:
-            template_name = file_path.stem  # Имя без расширения
-            # Красивое имя для отображения
-            display_name = template_name.replace('_', ' ').upper()
-            
-            templates.append({
-                'id': f'tpl_{number}',
-                'number': str(number),
-                'name': display_name,
-                'filename': f"TEMPLATES/{file_path.name}"
-            })
-            number += 1
-    
-    return jsonify({'templates': templates})
+    """Получить список всех шаблонов из templates.json с GitHub ссылками для скачивания"""
+    try:
+        with open('templates.json', 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        templates = data.get('templates', [])
+        # Заменяем локальные пути на GitHub raw URL
+        for t in templates:
+            if 'filename' in t:
+                t['filename'] = GITHUB_RAW_BASE + t['filename']
+        return jsonify({'templates': templates})
+    except Exception as e:
+        return jsonify({'templates': [], 'error': str(e)})
 
 @app.route('/TEMPLATES/<filename>')
 def serve_template(filename):

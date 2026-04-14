@@ -985,25 +985,26 @@
                 console.log('templates.json не найден, используются встроенные шаблоны');
             }
             
-            // Стандартные шаблоны если файл не найден
+            // Стандартные шаблоны если файл не найден — ссылки на GitHub
+            const ghBase = 'https://raw.githubusercontent.com/supertv436-debug/tomis/main/';
             templatesData = {
                 templates: [
-                    { id: 'calendar', number: '1', name: 'КАЛЕНДАРНЫЙ ПЛАН', filename: 'TEMPLATES/Календарный_план_шаблон.docx' },
-                    { id: 'tickets', number: '2', name: 'ЭКЗАМЕНАЦИОННЫЕ БИЛЕТЫ', filename: 'TEMPLATES/Экзаменационные_билеты_шаблон.docx' },
-                    { id: 'syllabus', number: '3', name: 'СИЛЛАБУС', filename: 'TEMPLATES/Силлабус_шаблон.docx' },
-                    { id: 'program', number: '4', name: 'РАБОЧАЯ ПРОГРАММА', filename: 'TEMPLATES/Рабочая_программа_шаблон.docx' },
-                    { id: 'statement', number: '5', name: 'ВЕДОМОСТЬ', filename: 'TEMPLATES/Ведомость_шаблон.docx' },
-                    { id: 'protocol', number: '6', name: 'ПРОТОКОЛ ЗАСЕДАНИЯ', filename: 'TEMPLATES/Протокол_заседания_шаблон.docx' },
-                    { id: 'report', number: '7', name: 'ОТЧЕТ ПО ПРАКТИКЕ', filename: 'TEMPLATES/Отчет_по_практике_шаблон.docx' },
-                    { id: 'diploma', number: '8', name: 'ЗАДАНИЕ НА ДИПЛОМ', filename: 'TEMPLATES/Задание_на_диплом_шаблон.docx' },
-                    { id: 'calendar2', number: '9', name: 'КАЛЕНДАРНЫЙ ПЛАН МСИКМВ', filename: 'TEMPLATES/Календарный МСИКМВ на 26г..docx' },
-                    { id: 'memo1', number: '10', name: 'СЛУЖЕБКА НА ПЕРВУЮ ОПЛАТУ', filename: 'TEMPLATES/служебка на первую оплату.doc' },
-                    { id: 'memo2', number: '11', name: 'СЛУЖЕБКА НА ВТОРУЮ ОПЛАТУ', filename: 'TEMPLATES/служебка на вторую оплату.doc' },
-                    { id: 'memo3', number: '12', name: 'СЛУЖЕБКА НА КОМАНДИРОВКУ', filename: 'TEMPLATES/Служебка на командировку.doc' },
-                    { id: 'memo4', number: '13', name: 'СЛУЖЕБКА НА ПЕРЕМЕЩЕНИЕ', filename: 'TEMPLATES/Служебка на перемещение.doc' },
-                    { id: 'memo5', number: '14', name: 'СЛУЖЕБКА НА КОРРЕКТИРОВКУ', filename: 'TEMPLATES/Служебка на корректировку.doc' },
-                    { id: 'memo6', number: '15', name: 'СЛУЖЕБКА НА ЗАКЛЮЧЕНИЕ ДОГОВОРА', filename: 'TEMPLATES/служебка на заключение договора.doc' },
-                    { id: 'tickets2', number: '16', name: 'БИЛЕТЫ', filename: 'TEMPLATES/билеты.docx' }
+                    { id: 'calendar', number: '1', name: 'КАЛЕНДАРНЫЙ ПЛАН', filename: ghBase + 'TEMPLATES/Календарный_план_шаблон.docx' },
+                    { id: 'tickets', number: '2', name: 'ЭКЗАМЕНАЦИОННЫЕ БИЛЕТЫ', filename: ghBase + 'TEMPLATES/Экзаменационные_билеты_шаблон.docx' },
+                    { id: 'syllabus', number: '3', name: 'СИЛЛАБУС', filename: ghBase + 'TEMPLATES/Силлабус_шаблон.docx' },
+                    { id: 'program', number: '4', name: 'РАБОЧАЯ ПРОГРАММА', filename: ghBase + 'TEMPLATES/Рабочая_программа_шаблон.docx' },
+                    { id: 'statement', number: '5', name: 'ВЕДОМОСТЬ', filename: ghBase + 'TEMPLATES/Ведомость_шаблон.docx' },
+                    { id: 'protocol', number: '6', name: 'ПРОТОКОЛ ЗАСЕДАНИЯ', filename: ghBase + 'TEMPLATES/Протокол_заседания_шаблон.docx' },
+                    { id: 'report', number: '7', name: 'ОТЧЕТ ПО ПРАКТИКЕ', filename: ghBase + 'TEMPLATES/Отчет_по_практике_шаблон.docx' },
+                    { id: 'diploma', number: '8', name: 'ЗАДАНИЕ НА ДИПЛОМ', filename: ghBase + 'TEMPLATES/Задание_на_диплом_шаблон.docx' },
+                    { id: 'calendar2', number: '9', name: 'КАЛЕНДАРНЫЙ ПЛАН МСИКМВ', filename: ghBase + 'TEMPLATES/Календарный МСИКМВ на 26г..docx' },
+                    { id: 'memo1', number: '10', name: 'СЛУЖЕБКА НА ПЕРВУЮ ОПЛАТУ', filename: ghBase + 'TEMPLATES/служебка на первую оплату.doc' },
+                    { id: 'memo2', number: '11', name: 'СЛУЖЕБКА НА ВТОРУЮ ОПЛАТУ', filename: ghBase + 'TEMPLATES/служебка на вторую оплату.doc' },
+                    { id: 'memo3', number: '12', name: 'СЛУЖЕБКА НА КОМАНДИРОВКУ', filename: ghBase + 'TEMPLATES/Служебка на командировку.doc' },
+                    { id: 'memo4', number: '13', name: 'СЛУЖЕБКА НА ПЕРЕМЕЩЕНИЕ', filename: ghBase + 'TEMPLATES/Служебка на перемещение.doc' },
+                    { id: 'memo5', number: '14', name: 'СЛУЖЕБКА НА КОРРЕКТИРОВКУ', filename: ghBase + 'TEMPLATES/Служебка на корректировку.doc' },
+                    { id: 'memo6', number: '15', name: 'СЛУЖЕБКА НА ЗАКЛЮЧЕНИЕ ДОГОВОРА', filename: ghBase + 'TEMPLATES/служебка на заключение договора.doc' },
+                    { id: 'tickets2', number: '16', name: 'БИЛЕТЫ', filename: ghBase + 'TEMPLATES/билеты.docx' }
                 ]
             };
         }
