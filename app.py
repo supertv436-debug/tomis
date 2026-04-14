@@ -318,6 +318,10 @@ def get_templates():
     
     return jsonify({'templates': templates})
 
+@app.route('/TEMPLATES/<filename>')
+def serve_template(filename):
+    return send_file(os.path.join(app.config['TEMPLATES_FOLDER'], filename), as_attachment=True)
+
 @app.route('/download/<filename>')
 def download_file(filename):
     return send_file(os.path.join(app.config['EXPORTS_FOLDER'], filename), as_attachment=True)
